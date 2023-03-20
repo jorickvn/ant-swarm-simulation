@@ -18,10 +18,10 @@ class Ant(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.angle = random.uniform(0, 2*math.pi)  # starting angle is random
-        self.speed = 1.5
+        self.speed = 3
         self.screen = screen
         self.ticksSincePheromoneDropped = 0
-        self.pheromoneDropInterval = 5
+        self.pheromoneDropInterval = 2
         self.pheromoneType = "home"  # the type of pheromone this ant will drop
         self.pheromones = pygame.sprite.Group()  # list of pheromones dropped by this ant
 
@@ -42,7 +42,7 @@ class Ant(pygame.sprite.Sprite):
             self.y = new_y
 
         # randomly adjust angle to create irregular movement
-        self.angle += random.uniform(-math.pi/16, math.pi/16)
+        self.angle += random.uniform(-math.pi/8, math.pi/8)
 
         # add current position to trail if step interval has passed
         self.ticksSincePheromoneDropped += 1
@@ -53,8 +53,7 @@ class Ant(pygame.sprite.Sprite):
                 self.pheromones.add(Pheromone(self.x, self.y, self.pheromoneType))
 
     def draw(self):
-        pygame.draw.circle(self.screen, self.color, (int(self.x), int(self.y)), 2)
-
+        pygame.draw.circle(self.screen, self.color, (int(self.x), int(self.y)), 3)
         # draw pheromones
         for p in self.pheromones:
             p.update()

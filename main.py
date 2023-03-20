@@ -11,7 +11,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 # Create an ant sprite and add it to a sprite group
 ants = []
 i = 0
-while(i < 250):
+while(i < 500):
     ants.append(Ant((255, 0, 0), 0, 0, 10, 10, screen))
     i += 1
 ants.append(Ant((0, 255, 0), 0, 0, 10, 10, screen))
@@ -19,7 +19,7 @@ ant_group = pygame.sprite.Group(ants)
 
 # Set up the clock
 clock = pygame.time.Clock()
-FPS = 60
+FPS = 30
 
 # Main game loop
 running = True

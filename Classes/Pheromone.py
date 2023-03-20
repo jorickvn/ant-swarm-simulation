@@ -18,7 +18,7 @@ class Pheromone(pygame.sprite.Sprite):
     def update(self):
         self.age += 1
         if self.age == self.lifespan:
-            self.intensity -= 0.01
+            self.intensity -= 0.02
             self.age = 0
             originalColor = self.get_color()
             self.color = (originalColor[0] * self.intensity, originalColor[1] * self.intensity, originalColor[2] * self.intensity)
