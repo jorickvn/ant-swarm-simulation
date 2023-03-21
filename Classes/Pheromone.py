@@ -1,10 +1,11 @@
 import pygame
 
+
 class Pheromone(pygame.sprite.Sprite):
     def __init__(self, x, y, type):
         pygame.sprite.Sprite.__init__(self)
         self.type = type
-        self.image = pygame.Surface((10,10))
+        self.image = pygame.Surface((10, 10))
         self.color = self.get_color()
         self.image.fill(self.color)
         self.rect = self.image.get_rect()
@@ -21,17 +22,32 @@ class Pheromone(pygame.sprite.Sprite):
             self.intensity -= 0.02
             self.age = 0
             originalColor = self.get_color()
-            self.color = (originalColor[0] * self.intensity, originalColor[1] * self.intensity, originalColor[2] * self.intensity)
+            self.color = (originalColor[0] * self.intensity, originalColor[1]
+                          * self.intensity, originalColor[2] * self.intensity)
             if self.intensity <= 0.1:
                 return self.kill()
 
     def get_color(self):
         if self.type == "food":
-            return (255, 0, 0)  # red color for food pheromone
+            return (200, 0, 0)  # red color for food pheromone
         elif self.type == "home":
-            return (0, 255, 0)  # green color for home pheromone
+            return (0, 50, 0)  # green color for home pheromone
         else:
-            return (255, 255, 255)  # default color for other types of pheromones
+            # default color for other types of pheromones
+            return (150, 150, 150)
+
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (int(self.rect.centerx), int(self.rect.centery)), 1)
+        screen_width, screen_height = screen.get_size()
+        x, y = int(self.rect.centerx), int(self.rect.centery)
+        radius = 1
+        if x < radius:
+            x = radius
+        elif x > screen_width - radius:
+            x = screen_width - radius
+        if y < radius:
+            y = radius
+        elif y > screen_height - radius:
+            y = screen_height - radius
+        
+        pygame.draw.circle(screen, self.color, (x, y), radius)

@@ -1,6 +1,6 @@
 import pygame
 
-class Food(pygame.sprite.Sprite):
+class Colony(pygame.sprite.Sprite):
     def __init__(self, x, y, size, color):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface([size, size])
