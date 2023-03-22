@@ -3,12 +3,13 @@ import random
 from Classes.Colony import Colony
 from Classes.Ant import Ant
 from Classes.Food import Food
+from Classes.Pheromone import Pheromone
 
 # Initialize pygame
 pygame.init()
 
 # Set up the display
-screen_width, screen_height = 1920, 1080
+screen_width, screen_height = 800, 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Set up colors
@@ -54,10 +55,9 @@ clock = pygame.time.Clock()
 FPS = 30
 
 # Call spawning methods
-spawn_colony(150, 150, 30, PURPLE)
-spawn_food_cluster(500, 500, 5, GREEN, 200)
-spawn_food_cluster(250, 250, 5, GREEN, 5)
-spawn_ants(150, 150, 20)
+spawn_colony(60, 60, 50, PURPLE)
+spawn_food_cluster(700, 200, 5, GREEN, 100)
+spawn_ants(60, 60, 200)
 
 # Main game loop
 running = True
@@ -70,15 +70,21 @@ while running:
     # Clear the screen
     screen.fill((86, 60, 24))
 
+    # Update the pheromones
+    pheromone_sprite_group.update()
+    
     # Update the ants
-    ant_sprite_group.update()
-    ant_sprite_group.draw(screen)
     for ant in ant_sprite_group:
+        ant.update()
         ant.check_food_collision(food_sprite_group)
         ant.check_colony_collision(colony_sprite_group)
-        ant.check_pheromone_collision(pheromone_sprite_group)
+        ant.check_vision_collision(pheromone_sprite_group)
+
     # Draw all sprites
-    all_sprite_group.draw(screen)
+    food_sprite_group.draw(screen)
+    colony_sprite_group.draw(screen)
+    for ant in ant_sprite_group:
+        ant.draw()
 
     # Update the display
     pygame.display.update()

@@ -2,7 +2,7 @@ import pygame
 
 
 class Pheromone(pygame.sprite.Sprite):
-    def __init__(self, x, y, type):
+    def __init__(self, x, y, type, screen):
         pygame.sprite.Sprite.__init__(self)
         self.type = type
         self.image = pygame.Surface((10, 10))
@@ -13,19 +13,19 @@ class Pheromone(pygame.sprite.Sprite):
         self.rect.centery = y
         self.type = type
         self.intensity = 1
-        self.lifespan = 3
+        self.lifespan = 15
         self.age = 0
+        self.screen = screen
 
     def update(self):
         self.age += 1
-        if self.age == self.lifespan:
+        if self.age % self.lifespan == 0:
             self.intensity -= 0.02
-            self.age = 0
             originalColor = self.get_color()
-            self.color = (originalColor[0] * self.intensity, originalColor[1]
-                          * self.intensity, originalColor[2] * self.intensity)
+            self.color = (originalColor[0] * self.intensity, originalColor[1]* self.intensity, originalColor[2] * self.intensity)
             if self.intensity <= 0.1:
                 return self.kill()
+        self.draw()
 
     def get_color(self):
         if self.type == "food":
@@ -37,8 +37,8 @@ class Pheromone(pygame.sprite.Sprite):
             return (150, 150, 150)
 
 
-    def draw(self, screen):
-        screen_width, screen_height = screen.get_size()
+    def draw(self):
+        screen_width, screen_height = self.screen.get_size()
         x, y = int(self.rect.centerx), int(self.rect.centery)
         radius = 1
         if x < radius:
@@ -50,4 +50,4 @@ class Pheromone(pygame.sprite.Sprite):
         elif y > screen_height - radius:
             y = screen_height - radius
         
-        pygame.draw.circle(screen, self.color, (x, y), radius)
+        pygame.draw.circle(self.screen, self.color, (x, y), 1)
