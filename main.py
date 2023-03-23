@@ -57,7 +57,10 @@ FPS = 30
 # Call spawning methods
 spawn_colony(60, 60, 50, PURPLE)
 spawn_food_cluster(700, 200, 5, GREEN, 100)
-spawn_ants(60, 60, 200)
+spawn_ants(60, 60, 50)
+
+# Spawn some food pheromones
+##pheromone_sprite_group.add(Pheromone(100, 100, "food", screen))
 
 # Main game loop
 running = True
@@ -71,14 +74,16 @@ while running:
     screen.fill((86, 60, 24))
 
     # Update the pheromones
-    pheromone_sprite_group.update()
+    for pheromone in pheromone_sprite_group:
+        pheromone.update()
+        pheromone.draw()
     
     # Update the ants
     for ant in ant_sprite_group:
-        ant.update()
         ant.check_food_collision(food_sprite_group)
         ant.check_colony_collision(colony_sprite_group)
         ant.check_vision_collision(pheromone_sprite_group)
+        ant.update()
 
     # Draw all sprites
     food_sprite_group.draw(screen)

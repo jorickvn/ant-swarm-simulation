@@ -86,8 +86,8 @@ class Ant(pygame.sprite.Sprite):
         #pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
 
     def update(self):
-        self.moveToPheromone()
         self.checkIfPheromoneReached()
+        self.moveToPheromone()
 
     def check_food_collision(self, food_group):
         food_collision = pygame.sprite.spritecollideany(self, food_group)
@@ -95,6 +95,7 @@ class Ant(pygame.sprite.Sprite):
             if self.has_food == False:
                 self.has_food = True
                 self.pheromone_type = "food"
+                print("Picked up food")
                 self.strongest_recent_pheromone = None
                 # food_collision.kill()
 
@@ -107,30 +108,27 @@ class Ant(pygame.sprite.Sprite):
                 self.strongest_recent_pheromone = None
 
     def check_vision_collision(self, pheromone_group):
-        
+        # Clear strongest recent pheromone once an ants get close
         if self.strongest_recent_pheromone is not None:
             pheromone_distance = ((self.rect.centerx - self.strongest_recent_pheromone.rect.centerx) ** 2 + (self.rect.centery - self.strongest_recent_pheromone.rect.centery) ** 2) ** 0.5
-            if pheromone_distance <= 15: # adjust this value to change the distance threshold
-                if self.pheromone_type == self.strongest_recent_pheromone.type:
-                    self.strongest_recent_pheromone = None
+            if pheromone_distance <= 5: # adjust this value to change the distance threshold
+                self.strongest_recent_pheromone = None
 
-        pheromone_collision = pygame.sprite.spritecollideany(self.pheromone_sense_sprite, pheromone_group)
-        if pheromone_collision:
-            if self.strongest_recent_pheromone is None:
-                if self.has_food:
-                    if pheromone_collision.type == "home":
+        pheromone_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, pheromone_group, False)
+        for pheromone_collision in pheromone_collisions:
+            if pheromone_collision is not None:
+                print(pheromone_collision.type)
+                if self.strongest_recent_pheromone is None:
+                    if self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
                         self.strongest_recent_pheromone = pheromone_collision
-                else:
-                    if pheromone_collision.type == "food":
-                        self.strongest_recent_pheromone = pheromone_collision
-            elif self.strongest_recent_pheromone.age < pheromone_collision.age:
-                if self.has_food:
-                    if pheromone_collision.type == "home":
-                        self.strongest_recent_pheromone = pheromone_collision
-                else:
-                    if pheromone_collision.type == "food":
-                        print("Started following a food trail")
-                        self.strongest_recent_pheromone = pheromone_collision
+    
+                elif self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
+                    if self.strongest_recent_pheromone.age < pheromone_collision.age:
+                        if self.has_food:
+                                self.strongest_recent_pheromone = pheromone_collision
+                        else:
+                            if pheromone_collision.type == "food":
+                                self.strongest_recent_pheromone = pheromone_collision
 
     
     def checkIfPheromoneReached(self):

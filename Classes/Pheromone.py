@@ -25,7 +25,6 @@ class Pheromone(pygame.sprite.Sprite):
             self.color = (originalColor[0] * self.intensity, originalColor[1]* self.intensity, originalColor[2] * self.intensity)
             if self.intensity <= 0.1:
                 return self.kill()
-        self.draw()
 
     def get_color(self):
         if self.type == "food":
