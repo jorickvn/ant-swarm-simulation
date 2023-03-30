@@ -30,7 +30,7 @@ class Pheromone(pygame.sprite.Sprite):
         if self.type == "food":
             return (200, 0, 0)  # red color for food pheromone
         elif self.type == "home":
-            return (0, 50, 0)  # green color for home pheromone
+            return (0, 200, 0)  # green color for home pheromone
         else:
             # default color for other types of pheromones
             return (150, 150, 150)

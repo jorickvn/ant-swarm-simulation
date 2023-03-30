@@ -75,7 +75,7 @@ class Ant(pygame.sprite.Sprite):
         pygame.draw.rect(self.screen, self.color, self.rect)
 
         # draw pheromone sense
-        pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
+        #pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
 
     def update(self):
         self.checkIfPheromoneReached()
