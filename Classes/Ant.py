@@ -5,7 +5,7 @@ from Classes.Pheromone import Pheromone
 
 
 class Ant(pygame.sprite.Sprite):
-    def __init__(self, color, x, y, size, screen, pheromone_group):
+    def __init__(self, color, x, y, size, screen, pheromone_group, food_group, colony_group):
 
         # Sprite and image
         pygame.sprite.Sprite.__init__(self)
@@ -18,6 +18,8 @@ class Ant(pygame.sprite.Sprite):
         # Storing globals
         self.screen = screen
         self.pheromone_group = pheromone_group
+        self.food_group = food_group
+        self.colony_group = colony_group
 
         # Movement and rotation
         self.rect.x = x
@@ -27,8 +29,8 @@ class Ant(pygame.sprite.Sprite):
 
         # Pheromones
         self.pheromone_type = "home"  # the type of pheromone this ant will drop
-        self.ticksSincePheromoneDropped = 13
-        self.pheromoneDropInterval = 14
+        self.ticksSincePheromoneDropped = 19
+        self.pheromoneDropInterval = 20
         self.strongest_recent_pheromone = None
 
         # Food
@@ -98,10 +100,9 @@ class Ant(pygame.sprite.Sprite):
             if self.has_food == False:
                 self.has_food = True
                 self.pheromone_type = "food"
-                print("Picked up food")
                 self.strongest_recent_pheromone = None
                 self.drop_pheromone()
-                food_collision.kill()
+                #food_collision.kill()
 
     def check_colony_collision(self, colony_group):
         colony_collision = pygame.sprite.spritecollideany(self, colony_group)
@@ -112,17 +113,16 @@ class Ant(pygame.sprite.Sprite):
                 self.strongest_recent_pheromone = None
                 self.drop_pheromone()
 
-    def check_vision_collision(self, pheromone_group):
+    def check_vision_collision(self):
         # Clear strongest recent pheromone once an ants get close
         if self.strongest_recent_pheromone is not None:
             pheromone_distance = ((self.rect.centerx - self.strongest_recent_pheromone.rect.centerx) ** 2 + (self.rect.centery - self.strongest_recent_pheromone.rect.centery) ** 2) ** 0.5
             if pheromone_distance <= 5: # adjust this value to change the distance threshold
                 self.strongest_recent_pheromone = None
 
-        pheromone_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, pheromone_group, False)
+        pheromone_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.pheromone_group, False)
         for pheromone_collision in pheromone_collisions:
             if pheromone_collision is not None:
-                print(pheromone_collision.type)
                 if self.strongest_recent_pheromone is None:
                     if self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
                         self.strongest_recent_pheromone = pheromone_collision

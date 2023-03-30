@@ -9,7 +9,7 @@ from Classes.Pheromone import Pheromone
 pygame.init()
 
 # Set up the display
-screen_width, screen_height = 400, 300
+screen_width, screen_height = 1500, 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Set up colors
@@ -34,7 +34,7 @@ def spawn_colony(x, y, size, color):
 def spawn_ants(x, y, num_ants):
     ants = []
     for i in range(num_ants):
-      ants.append(Ant(BLACK, x, y, 7, screen, pheromone_sprite_group))
+      ants.append(Ant(BLACK, x, y, 7, screen, pheromone_sprite_group, food_sprite_group, colony_sprite_group))
     ant_sprite_group.add(pygame.sprite.Group(ants))
     all_sprite_group.add(pygame.sprite.Group(ants))
 
@@ -56,8 +56,8 @@ FPS = 30
 
 # Call spawning methods
 spawn_colony(60, 60, 50, PURPLE)
-spawn_food_cluster(300, 200, 5, GREEN, 100)
-spawn_ants(60, 60, 20)
+spawn_food_cluster(700, 200, 5, GREEN, 100)
+spawn_ants(60, 60, 125)
 
 # Spawn some food pheromones
 ##pheromone_sprite_group.add(Pheromone(100, 100, "food", screen))
@@ -82,7 +82,7 @@ while running:
     for ant in ant_sprite_group:
         ant.check_food_collision(food_sprite_group)
         ant.check_colony_collision(colony_sprite_group)
-        ant.check_vision_collision(pheromone_sprite_group)
+        ant.check_vision_collision()
         ant.update()
 
     # Draw all sprites
