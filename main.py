@@ -9,7 +9,7 @@ from Classes.Pheromone import Pheromone
 pygame.init()
 
 # Set up the display
-screen_width, screen_height = 800, 600
+screen_width, screen_height = 400, 300
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Set up colors
@@ -56,8 +56,8 @@ FPS = 30
 
 # Call spawning methods
 spawn_colony(60, 60, 50, PURPLE)
-spawn_food_cluster(700, 200, 5, GREEN, 100)
-spawn_ants(60, 60, 50)
+spawn_food_cluster(300, 200, 5, GREEN, 100)
+spawn_ants(60, 60, 20)
 
 # Spawn some food pheromones
 ##pheromone_sprite_group.add(Pheromone(100, 100, "food", screen))

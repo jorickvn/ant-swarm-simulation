@@ -74,20 +74,23 @@ class Ant(pygame.sprite.Sprite):
         if (self.ticksSincePheromoneDropped == self.pheromoneDropInterval):
             # drop a pheromone of the current type at the current position
             self.ticksSincePheromoneDropped = 0
-            if self.pheromone_type is not None:
-                pheromone = Pheromone(self.rect.x, self.rect.y, self.pheromone_type, self.screen)
-                self.pheromone_group.add(pygame.sprite.Group(pheromone))
+            self.drop_pheromone()
 
     def draw(self):
         # draw self
         pygame.draw.rect(self.screen, self.color, self.rect)
 
         # draw pheromone sense
-        #pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
+        # pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
 
     def update(self):
         self.checkIfPheromoneReached()
         self.moveToPheromone()
+
+    def drop_pheromone(self):
+        if self.pheromone_type is not None:
+            pheromone = Pheromone(self.rect.x, self.rect.y, self.pheromone_type, self.screen)
+            self.pheromone_group.add(pygame.sprite.Group(pheromone))
 
     def check_food_collision(self, food_group):
         food_collision = pygame.sprite.spritecollideany(self, food_group)
@@ -97,7 +100,8 @@ class Ant(pygame.sprite.Sprite):
                 self.pheromone_type = "food"
                 print("Picked up food")
                 self.strongest_recent_pheromone = None
-                # food_collision.kill()
+                self.drop_pheromone()
+                food_collision.kill()
 
     def check_colony_collision(self, colony_group):
         colony_collision = pygame.sprite.spritecollideany(self, colony_group)
@@ -106,6 +110,7 @@ class Ant(pygame.sprite.Sprite):
                 self.has_food = False
                 self.pheromone_type = "home"
                 self.strongest_recent_pheromone = None
+                self.drop_pheromone()
 
     def check_vision_collision(self, pheromone_group):
         # Clear strongest recent pheromone once an ants get close
