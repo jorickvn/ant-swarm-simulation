@@ -26,11 +26,12 @@ class Ant(pygame.sprite.Sprite):
         self.rect.y = y
         self.angle = random.uniform(0, 2 * math.pi)  # starting angle is random
         self.speed = 3
+        self.destination = None
 
         # Pheromones
         self.pheromone_type = "home"  # the type of pheromone this ant will drop
-        self.ticksSincePheromoneDropped = 19
-        self.pheromoneDropInterval = 20
+        self.ticksSincePheromoneDropped = 13
+        self.pheromoneDropInterval = 14
         self.strongest_recent_pheromone = None
 
         # Food
@@ -40,41 +41,32 @@ class Ant(pygame.sprite.Sprite):
         self.pheromone_sense_sprite = pygame.sprite.Sprite()
         self.pheromone_sense_sprite.rect = pygame.Rect(self.rect.x, self.rect.y, 100, 100)
 
-    def moveToPheromone(self):
-        if self.strongest_recent_pheromone is not None:
-            # calculate angle and distance to strongest recent pheromone
-            dx = self.strongest_recent_pheromone.rect.x - self.rect.x
-            dy = self.strongest_recent_pheromone.rect.y - self.rect.y
+    def setDestination(self, destination):
+        self.destination = [destination.rect.x, destination.rect.y]
+
+    def turnToDestination(self):
+        if self.destination is not None:
+            dx = self.destination[0] - self.rect.x
+            dy = self.destination[1] - self.rect.y
             self.angle = math.atan2(dy, dx)
+            self.image = pygame.transform.rotate(self.original_image, math.degrees(-self.angle))
+            self.rect = self.image.get_rect(center=self.rect.center)
 
-        else:
-            # randomly adjust angle to create irregular movement
-            self.angle += random.uniform(-math.pi/32, math.pi/32)
-
-          # calculate new position based on angle and speed
+    def move(self):
         dx = math.cos(self.angle) * self.speed
         dy = math.sin(self.angle) * self.speed
         new_x = self.rect.x + dx
         new_y = self.rect.y + dy
-        
-        # check if new position is out of bounds
+
         if new_x < 0 or new_x > self.screen.get_width() or new_y < 0 or new_y > self.screen.get_height():
-            # if out of bounds, randomly adjust angle to steer back into screen
             self.angle += random.uniform(-math.pi/4, math.pi/4)
         else:
-            # if within bounds, move to new position
             self.rect.x = new_x
             self.rect.y = new_y
             self.pheromone_sense_sprite.rect.center = self.rect.center
-        
-        # rotate rectangle based on angle
-        self.image = pygame.transform.rotate(self.original_image, math.degrees(-self.angle))
-        self.rect = self.image.get_rect(center=self.rect.center)
-        
-        # add current position to trail if step interval has passed
+
         self.ticksSincePheromoneDropped += 1
         if (self.ticksSincePheromoneDropped == self.pheromoneDropInterval):
-            # drop a pheromone of the current type at the current position
             self.ticksSincePheromoneDropped = 0
             self.drop_pheromone()
 
@@ -83,14 +75,15 @@ class Ant(pygame.sprite.Sprite):
         pygame.draw.rect(self.screen, self.color, self.rect)
 
         # draw pheromone sense
-        # pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
+        pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
 
     def update(self):
         self.checkIfPheromoneReached()
-        self.moveToPheromone()
+        self.turnToDestination()
+        self.move()
 
     def drop_pheromone(self):
-        if self.pheromone_type is not None:
+        if self.pheromone_type != None:
             pheromone = Pheromone(self.rect.x, self.rect.y, self.pheromone_type, self.screen)
             self.pheromone_group.add(pygame.sprite.Group(pheromone))
 
@@ -102,7 +95,7 @@ class Ant(pygame.sprite.Sprite):
                 self.pheromone_type = "food"
                 self.strongest_recent_pheromone = None
                 self.drop_pheromone()
-                #food_collision.kill()
+                food_collision.kill()
 
     def check_colony_collision(self, colony_group):
         colony_collision = pygame.sprite.spritecollideany(self, colony_group)
@@ -115,10 +108,22 @@ class Ant(pygame.sprite.Sprite):
 
     def check_vision_collision(self):
         # Clear strongest recent pheromone once an ants get close
-        if self.strongest_recent_pheromone is not None:
-            pheromone_distance = ((self.rect.centerx - self.strongest_recent_pheromone.rect.centerx) ** 2 + (self.rect.centery - self.strongest_recent_pheromone.rect.centery) ** 2) ** 0.5
-            if pheromone_distance <= 5: # adjust this value to change the distance threshold
-                self.strongest_recent_pheromone = None
+        if self.destination is not None:
+            destination_distance = ((self.rect.centerx - self.destination[0]) ** 2 + (self.rect.centery - self.destination[1]) ** 2) ** 0.5
+            if destination_distance <= 5: # adjust this value to change the distance threshold
+                self.destination = None
+
+        if self.has_food == False:
+            food_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.food_group, False)
+            if food_collisions:
+                self.setDestination(food_collisions[0])
+                return
+
+        if self.has_food == True:
+            colony_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.colony_group, False)
+            if colony_collisions:
+                self.setDestination(colony_collisions[0])
+                return
 
         pheromone_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.pheromone_group, False)
         for pheromone_collision in pheromone_collisions:
@@ -126,15 +131,17 @@ class Ant(pygame.sprite.Sprite):
                 if self.strongest_recent_pheromone is None:
                     if self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
                         self.strongest_recent_pheromone = pheromone_collision
+                        self.setDestination(pheromone_collision)
     
                 elif self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
                     if self.strongest_recent_pheromone.age < pheromone_collision.age:
                         if self.has_food:
                                 self.strongest_recent_pheromone = pheromone_collision
+                                self.setDestination(pheromone_collision)
                         else:
                             if pheromone_collision.type == "food":
                                 self.strongest_recent_pheromone = pheromone_collision
-
+                                self.setDestination(pheromone_collision)
     
     def checkIfPheromoneReached(self):
         if self.strongest_recent_pheromone is not None:

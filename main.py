@@ -56,8 +56,8 @@ FPS = 30
 
 # Call spawning methods
 spawn_colony(60, 60, 50, PURPLE)
-spawn_food_cluster(700, 200, 5, GREEN, 100)
-spawn_ants(60, 60, 125)
+spawn_food_cluster(350, 200, 5, GREEN, 100)
+spawn_ants(60, 60, 75)
 
 # Spawn some food pheromones
 ##pheromone_sprite_group.add(Pheromone(100, 100, "food", screen))
