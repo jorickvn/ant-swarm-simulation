@@ -26,7 +26,7 @@ pheromone_sprite_group = pygame.sprite.Group()
 
 # Spawn the colony
 def spawn_colony(x, y, size, color):
-    colony = Colony(x, y, size, color)
+    colony = Colony(x, y, size, color, screen, ant_sprite_group, pheromone_sprite_group, food_sprite_group, colony_sprite_group)
     colony_sprite_group.add(pygame.sprite.Group(colony))
     all_sprite_group.add(pygame.sprite.Group(colony))
 
@@ -56,7 +56,9 @@ FPS = 30
 
 # Call spawning methods
 spawn_colony(60, 60, 50, PURPLE)
-spawn_food_cluster(800, 200, 5, GREEN, 100)
+#spawn_food_cluster(250, 200, 5, GREEN, 500)
+spawn_food_cluster(900, 150, 5, GREEN, 100)
+spawn_food_cluster(1450, 550, 5, GREEN, 300)
 spawn_ants(60, 60, 150)
 
 # Spawn some food pheromones
@@ -72,6 +74,13 @@ while running:
 
     # Clear the screen
     screen.fill((86, 60, 24))
+
+    diff = len(pheromone_sprite_group.sprites()) - 10000
+    if diff > 0:
+        for i in range(diff):
+            sprite_to_remove = pheromone_sprite_group.sprites()[0]
+            pheromone_sprite_group.remove(sprite_to_remove)
+        
 
     # Update the pheromones
     for pheromone in pheromone_sprite_group:

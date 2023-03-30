@@ -13,7 +13,7 @@ class Pheromone(pygame.sprite.Sprite):
         self.rect.centery = y
         self.type = type
         self.intensity = 1
-        self.lifespan = 15
+        self.lifespan = 25
         self.age = 0
         self.screen = screen
 

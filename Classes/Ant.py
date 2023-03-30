@@ -30,8 +30,8 @@ class Ant(pygame.sprite.Sprite):
 
         # Pheromones
         self.pheromone_type = "home"  # the type of pheromone this ant will drop
-        self.ticksSincePheromoneDropped = 13
-        self.pheromoneDropInterval = 14
+        self.ticksSincePheromoneDropped = 21
+        self.pheromoneDropInterval = 22
         self.strongest_recent_pheromone = None
 
         # Food
@@ -39,7 +39,7 @@ class Ant(pygame.sprite.Sprite):
 
         # Senses
         self.pheromone_sense_sprite = pygame.sprite.Sprite()
-        self.pheromone_sense_sprite.rect = pygame.Rect(self.rect.x, self.rect.y, 100, 100)
+        self.pheromone_sense_sprite.rect = pygame.Rect(self.rect.x, self.rect.y, 130, 130)
 
     def setDestination(self, destination):
         self.destination = [destination.rect.x, destination.rect.y]
@@ -49,8 +49,11 @@ class Ant(pygame.sprite.Sprite):
             dx = self.destination[0] - self.rect.x
             dy = self.destination[1] - self.rect.y
             self.angle = math.atan2(dy, dx)
-            self.image = pygame.transform.rotate(self.original_image, math.degrees(-self.angle))
-            self.rect = self.image.get_rect(center=self.rect.center)
+
+        # add some randomness to the angle of rotation
+        self.angle += random.uniform(-math.pi/16, math.pi/16)
+        self.image = pygame.transform.rotate(self.original_image, math.degrees(-self.angle))
+        self.rect = self.image.get_rect(center=self.rect.center)
 
     def move(self):
         dx = math.cos(self.angle) * self.speed
@@ -102,17 +105,12 @@ class Ant(pygame.sprite.Sprite):
         if colony_collision:
             if self.has_food == True:
                 self.has_food = False
+                colony_collision.spawn_ant()
                 self.pheromone_type = "home"
                 self.strongest_recent_pheromone = None
                 self.drop_pheromone()
 
     def check_vision_collision(self):
-        # Clear strongest recent pheromone once an ants get close
-        if self.destination is not None:
-            destination_distance = ((self.rect.centerx - self.destination[0]) ** 2 + (self.rect.centery - self.destination[1]) ** 2) ** 0.5
-            if destination_distance <= 5: # adjust this value to change the distance threshold
-                self.destination = None
-
         if self.has_food == False:
             food_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.food_group, False)
             if food_collisions:
@@ -135,16 +133,11 @@ class Ant(pygame.sprite.Sprite):
     
                 elif self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
                     if self.strongest_recent_pheromone.age < pheromone_collision.age:
-                        if self.has_food:
-                                self.strongest_recent_pheromone = pheromone_collision
-                                self.setDestination(pheromone_collision)
-                        else:
-                            if pheromone_collision.type == "food":
-                                self.strongest_recent_pheromone = pheromone_collision
-                                self.setDestination(pheromone_collision)
+                        self.setDestination(pheromone_collision)
+                        self.strongest_recent_pheromone = pheromone_collision
     
     def checkIfPheromoneReached(self):
-        if self.strongest_recent_pheromone is not None:
-            pheromone_distance = ((self.rect.centerx - self.strongest_recent_pheromone.rect.centerx) ** 2 + (self.rect.centery - self.strongest_recent_pheromone.rect.centery) ** 2) ** 0.5
-            if pheromone_distance <= 15: # adjust this value to change the distance threshold
-                self.strongest_recent_pheromone = None
+        if self.destination is not None:
+            pheromone_distance = ((self.rect.centerx - self.destination[0]) ** 2 + (self.rect.centery - self.destination[1]) ** 2) ** 0.5
+            if pheromone_distance <= 30: # adjust this value to change the distance threshold
+                self.destination = None
