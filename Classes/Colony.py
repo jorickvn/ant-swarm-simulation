@@ -27,6 +27,6 @@ class Colony(pygame.sprite.Sprite):
         pygame.draw.rect(self.screen, self.color, self.rect, self.size)
 
     def spawn_ant(self):
-        #ant = Ant((0, 0, 0), self.x, self.y, 7, self.screen, self.pheromone_group, self.food_group, self.colony_group)
-        #self.ant_group.add(pygame.sprite.Group(ant))
+        ant = Ant((0, 0, 0), self.x, self.y, 7, self.screen, self.pheromone_group, self.food_group, self.colony_group)
+        self.ant_group.add(pygame.sprite.Group(ant))
         print("spawn ant")

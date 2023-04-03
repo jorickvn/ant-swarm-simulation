@@ -62,7 +62,7 @@ class Ant(pygame.sprite.Sprite):
         new_y = self.rect.y + dy
 
         if new_x < 0 or new_x > self.screen.get_width() or new_y < 0 or new_y > self.screen.get_height():
-            self.angle += random.uniform(-math.pi/4, math.pi/4)
+            self.angle += random.uniform(-math.pi/8, math.pi/8)
         else:
             self.rect.x = new_x
             self.rect.y = new_y
