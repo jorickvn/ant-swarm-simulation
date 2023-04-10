@@ -13,5 +13,5 @@ class Food(pygame.sprite.Sprite):
     def update(self):
         pass
 
-    def draw(self):
-        pygame.draw.rect(self.screen, self.color, self.rect, self.size)
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, self.size)

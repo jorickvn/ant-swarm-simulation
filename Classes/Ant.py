@@ -2,10 +2,11 @@ import pygame
 import math
 import random
 from Classes.Pheromone import Pheromone
+from Classes.Grid import Grid
 
 
 class Ant(pygame.sprite.Sprite):
-    def __init__(self, color, x, y, size, screen, pheromone_group, food_group, colony_group):
+    def __init__(self, color, x, y, size, screen, pheromone_group, food_group, colony_group, grid):
 
         # Sprite and image
         pygame.sprite.Sprite.__init__(self)
@@ -20,6 +21,7 @@ class Ant(pygame.sprite.Sprite):
         self.pheromone_group = pheromone_group
         self.food_group = food_group
         self.colony_group = colony_group
+        self.grid = grid
 
         # Movement and rotation
         self.rect.x = x
@@ -30,8 +32,8 @@ class Ant(pygame.sprite.Sprite):
 
         # Pheromones
         self.pheromone_type = "home"  # the type of pheromone this ant will drop
-        self.ticksSincePheromoneDropped = 21
-        self.pheromoneDropInterval = 22
+        self.pheromoneDropInterval = 15
+        self.ticksSincePheromoneDropped = random.randint(0, self.pheromoneDropInterval-1)
         self.strongest_recent_pheromone = None
 
         # Food
@@ -73,22 +75,24 @@ class Ant(pygame.sprite.Sprite):
             self.ticksSincePheromoneDropped = 0
             self.drop_pheromone()
 
-    def draw(self):
+    def draw(self, screen):
         # draw self
-        pygame.draw.rect(self.screen, self.color, self.rect)
+        pygame.draw.rect(screen, self.color, self.rect)
 
         # draw pheromone sense
         #pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
 
     def update(self):
+        self.check_vision_collision()
         self.checkIfPheromoneReached()
         self.turnToDestination()
         self.move()
 
     def drop_pheromone(self):
         if self.pheromone_type != None:
-            pheromone = Pheromone(self.rect.x, self.rect.y, self.pheromone_type, self.screen)
+            pheromone = Pheromone(self.rect.x, self.rect.y, self.pheromone_type)
             self.pheromone_group.add(pygame.sprite.Group(pheromone))
+            self.grid.add_pheromone(self.rect.x, self.rect.y, pheromone)
 
     def check_food_collision(self, food_group):
         food_collision = pygame.sprite.spritecollideany(self, food_group)
@@ -123,7 +127,7 @@ class Ant(pygame.sprite.Sprite):
                 self.setDestination(colony_collisions[0])
                 return
 
-        pheromone_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.pheromone_group, False)
+        pheromone_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.grid.get_pheromones(self.rect.x, self.rect.y), False)
         for pheromone_collision in pheromone_collisions:
             if pheromone_collision is not None:
                 if self.strongest_recent_pheromone is None:

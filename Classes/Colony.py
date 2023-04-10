@@ -4,7 +4,7 @@ from Classes.Food import Food
 from Classes.Pheromone import Pheromone
 
 class Colony(pygame.sprite.Sprite):
-    def __init__(self, x, y, size, color, screen, ant_group, pheromone_group, food_group, colony_group):
+    def __init__(self, x, y, size, color, screen, ant_group, pheromone_group, food_group, colony_group, grid):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface([size, size])
         self.image.fill(color)
@@ -19,14 +19,15 @@ class Colony(pygame.sprite.Sprite):
         self.food_group = food_group
         self.colony_group = colony_group
         self.screen = screen
+        self.grid = grid
 
     def update(self):
         pass
 
-    def draw(self):
-        pygame.draw.rect(self.screen, self.color, self.rect, self.size)
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, self.size)
 
     def spawn_ant(self):
-        ant = Ant((0, 0, 0), self.x, self.y, 7, self.screen, self.pheromone_group, self.food_group, self.colony_group)
+        ant = Ant((0, 0, 0), self.x, self.y, 7, self.screen, self.pheromone_group, self.food_group, self.colony_group, self.grid)
         self.ant_group.add(pygame.sprite.Group(ant))
-        print("spawn ant")
+        #print("spawn ant")
