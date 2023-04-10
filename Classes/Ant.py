@@ -24,10 +24,12 @@ class Ant(pygame.sprite.Sprite):
         self.grid = grid
 
         # Movement and rotation
-        self.rect.x = x
-        self.rect.y = y
-        self.angle = random.uniform(0, 2 * math.pi)  # starting angle is random
-        self.speed = 3
+        self.speed = 3  # constant speed the ant moves at
+        self.position = pygame.math.Vector2(x, y)
+        angle = random.uniform(0, 2 * math.pi)
+        self.velocity = pygame.math.Vector2(math.cos(angle), math.sin(angle)) * self.speed
+        self.acceleration = pygame.math.Vector2(0, 0)
+        self.max_turn_angle = math.pi  # maximum angle the ant can turn per update
         self.destination = None
 
         # Pheromones
@@ -41,50 +43,63 @@ class Ant(pygame.sprite.Sprite):
 
         # Senses
         self.pheromone_sense_sprite = pygame.sprite.Sprite()
-        self.pheromone_sense_sprite.rect = pygame.Rect(self.rect.x, self.rect.y, 130, 130)
+        self.pheromone_sense_sprite.rect = pygame.Rect(self.rect.x, self.rect.y, 250, 250)
 
-    def setDestination(self, destination):
-        self.destination = [destination.rect.x, destination.rect.y]
+    def setDestination(self, x, y):
+        self.destination = pygame.math.Vector2(x, y)
 
     def turnToDestination(self):
-        if self.destination is not None:
-            dx = self.destination[0] - self.rect.x
-            dy = self.destination[1] - self.rect.y
-            self.angle = math.atan2(dy, dx)
-
-        # add some randomness to the angle of rotation
-        self.angle += random.uniform(-math.pi/16, math.pi/16)
-        self.image = pygame.transform.rotate(self.original_image, math.degrees(-self.angle))
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-    def move(self):
-        dx = math.cos(self.angle) * self.speed
-        dy = math.sin(self.angle) * self.speed
-        new_x = self.rect.x + dx
-        new_y = self.rect.y + dy
-
-        if new_x < 0 or new_x > self.screen.get_width() or new_y < 0 or new_y > self.screen.get_height():
-            self.angle += random.uniform(-math.pi/8, math.pi/8)
+        if self.destination is None:
+            self.velocity.rotate_ip(random.uniform(-self.max_turn_angle / 18, self.max_turn_angle / 18))
         else:
-            self.rect.x = new_x
-            self.rect.y = new_y
-            self.pheromone_sense_sprite.rect.center = self.rect.center
+            desired_direction = self.destination - self.position
+            if desired_direction.length() > 0:
+                desired_direction = desired_direction.normalize()
+                angle_diff = math.degrees(math.atan2(desired_direction.y, desired_direction.x) - math.atan2(self.velocity.y, self.velocity.x))
+                angle_diff = max(-self.max_turn_angle, min(self.max_turn_angle, angle_diff))
+                self.velocity.rotate_ip(angle_diff)
+    
+            self.image = pygame.transform.rotate(self.original_image, -self.velocity.as_polar()[1])
+            self.rect = self.image.get_rect(center=self.position)
+    
+    def move(self):
+        # Update position and velocity
+        self.velocity = self.velocity.normalize() * self.speed
+        new_position = self.position + self.velocity
+        self.position = new_position
+        self.rect.center = self.position
 
+        # Reflect off screen boundaries
+        if self.position.x < 0:
+            self.position.x = abs(self.position.x)
+            self.velocity.x *= -1
+        elif self.position.x > self.screen.get_width():
+            self.position.x = 2 * self.screen.get_width() - self.position.x
+            self.velocity.x *= -1
+
+        if self.position.y < 0:
+            self.position.y = abs(self.position.y)
+            self.velocity.y *= -1
+        elif self.position.y > self.screen.get_height():
+            self.position.y = 2 * self.screen.get_height() - self.position.y
+            self.velocity.y *= -1
+
+        # Update pheromone sprite position
+        self.pheromone_sense_sprite.rect.center = self.position
+
+        # Drop pheromone if appropriate
         self.ticksSincePheromoneDropped += 1
-        if (self.ticksSincePheromoneDropped == self.pheromoneDropInterval):
+        if self.ticksSincePheromoneDropped == self.pheromoneDropInterval:
             self.ticksSincePheromoneDropped = 0
             self.drop_pheromone()
-
+    
     def draw(self, screen):
         # draw self
         pygame.draw.rect(screen, self.color, self.rect)
 
-        # draw pheromone sense
-        #pygame.draw.rect(self.screen, (255, 255, 255), self.pheromone_sense_sprite.rect, 2)
-
     def update(self):
+        self.check_highest_intensity_pheromone_cell()
         self.check_vision_collision()
-        self.checkIfPheromoneReached()
         self.turnToDestination()
         self.move()
 
@@ -101,7 +116,6 @@ class Ant(pygame.sprite.Sprite):
                 self.has_food = True
                 self.pheromone_type = "food"
                 self.strongest_recent_pheromone = None
-                self.drop_pheromone()
                 food_collision.kill()
 
     def check_colony_collision(self, colony_group):
@@ -112,36 +126,25 @@ class Ant(pygame.sprite.Sprite):
                 colony_collision.spawn_ant()
                 self.pheromone_type = "home"
                 self.strongest_recent_pheromone = None
-                self.drop_pheromone()
 
     def check_vision_collision(self):
         if self.has_food == False:
             food_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.food_group, False)
             if food_collisions:
-                self.setDestination(food_collisions[0])
-                return
+                self.setDestination(food_collisions[0].rect.x, food_collisions[0].rect.y)
 
         if self.has_food == True:
             colony_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.colony_group, False)
             if colony_collisions:
-                self.setDestination(colony_collisions[0])
-                return
+                self.setDestination(colony_collisions[0].rect.x, colony_collisions[0].rect.y)
 
-        pheromone_collisions = pygame.sprite.spritecollide(self.pheromone_sense_sprite, self.grid.get_pheromones(self.rect.x, self.rect.y), False)
-        for pheromone_collision in pheromone_collisions:
-            if pheromone_collision is not None:
-                if self.strongest_recent_pheromone is None:
-                    if self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
-                        self.strongest_recent_pheromone = pheromone_collision
-                        self.setDestination(pheromone_collision)
-    
-                elif self.pheromone_type != pheromone_collision.type and pheromone_collision.type != None:
-                    if self.strongest_recent_pheromone.age < pheromone_collision.age:
-                        self.setDestination(pheromone_collision)
-                        self.strongest_recent_pheromone = pheromone_collision
-    
-    def checkIfPheromoneReached(self):
-        if self.destination is not None:
-            pheromone_distance = ((self.rect.centerx - self.destination[0]) ** 2 + (self.rect.centery - self.destination[1]) ** 2) ** 0.5
-            if pheromone_distance <= 30: # adjust this value to change the distance threshold
-                self.destination = None
+    def check_highest_intensity_pheromone_cell(self):
+        if self.has_food == False:
+            destination = self.grid.get_highest_intensity_pheromone_cell_coordinates(self.rect.x, self.rect.y, 'food')
+        else:
+            destination = self.grid.get_highest_intensity_pheromone_cell_coordinates(self.rect.x, self.rect.y, 'home')
+
+        if(destination == None):
+            return
+        
+        self.setDestination(destination[0],destination[1])

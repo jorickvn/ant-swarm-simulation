@@ -19,7 +19,7 @@ screen_width, screen_height = 1500, 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Set up the grid
-sprite_grid = Grid(screen, 5)
+sprite_grid = Grid(screen, 20)
 
 # Set up sprite groups
 all_sprite_group = pygame.sprite.Group()
@@ -57,11 +57,11 @@ clock = pygame.time.Clock()
 FPS = 30
 
 # Call spawning methods
-spawn_colony(60, 60, 50, PURPLE)
-spawn_food_cluster(250, 200, 5, GREEN, 120)
+spawn_colony(100, 100, 50, PURPLE)
+spawn_food_cluster(550, 200, 5, GREEN, 120)
 spawn_food_cluster(900, 150, 5, GREEN, 100)
 spawn_food_cluster(1450, 550, 5, GREEN, 300)
-spawn_ants(60, 60, 500)
+spawn_ants(100, 100, 50)
 
 # Main game loop
 running = True
