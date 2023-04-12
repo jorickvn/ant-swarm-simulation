@@ -19,7 +19,7 @@ screen_width, screen_height = 1500, 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Set up the grid
-sprite_grid = Grid(screen, 20)
+sprite_grid = Grid(screen, 25)
 
 # Set up sprite groups
 all_sprite_group = pygame.sprite.Group()
@@ -61,7 +61,7 @@ spawn_colony(100, 100, 50, PURPLE)
 spawn_food_cluster(550, 200, 5, GREEN, 120)
 spawn_food_cluster(900, 150, 5, GREEN, 100)
 spawn_food_cluster(1450, 550, 5, GREEN, 300)
-spawn_ants(100, 100, 50)
+spawn_ants(100, 100, 5)
 
 # Main game loop
 running = True
@@ -80,8 +80,6 @@ while running:
     
     # Update the ants
     for ant in ant_sprite_group:
-        ant.check_food_collision(food_sprite_group)
-        ant.check_colony_collision(colony_sprite_group)
         ant.update()
 
     # Draw all sprites
